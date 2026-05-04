@@ -2,32 +2,28 @@ import type { UserInputs, FinancialProduct, Benefit, RecommendationResult } from
 import { mockProducts, mockBenefits } from './mockData';
 
 /**
- * 금융상품 추천 점수 계산
- * - 기간 일치 여부
- * - 안정형 -> 예금 우선
- * - 사회초년생 -> 청년 전용 상품 우선
+ * 금융 상품 추천 점수 계산
  */
 export const calculateProductScore = (product: FinancialProduct, user: UserInputs): number => {
   let score = 0;
 
-  // 1. 기간 일치 (가중치 높음)
+  // 1. 기간 일치 (최대 50점)
   if (product.period === user.period) {
     score += 50;
   } else if (Math.abs(product.period - user.period) <= 12) {
     score += 20;
   }
 
-  // 2. 투자 성향
+  // 2. 투자 성향 (최대 30점)
   if (user.investmentPropensity === '안정') {
-    if (product.type === 'deposit') score += 30;
-    else score += 10;
+    score += product.type === 'deposit' ? 30 : 10;
   } else if (user.investmentPropensity === '공격') {
-    if (product.type === 'savings') score += 30;
+    score += product.type === 'savings' ? 30 : 5; // 예금도 최소 점수 부여
   } else {
-    score += 20;
+    score += 20; // 중립형: 모든 상품 동일
   }
 
-  // 3. 직업 및 타겟
+  // 3. 직업 타겟 매칭 (40점)
   if (product.targetJob?.includes(user.job)) {
     score += 40;
   }
@@ -39,24 +35,48 @@ export const calculateProductScore = (product: FinancialProduct, user: UserInput
 };
 
 /**
- * 지원금 적합성 계산
- * - 연령대 확인
- * - 소득 기준 확인
+ * 추천 이유 생성 (투명성 확보)
  */
-export const calculateBenefitScore = (benefit: any, user: UserInputs): number => {
+export const generateProductReason = (product: FinancialProduct, user: UserInputs): string => {
+  const reasons: string[] = [];
+
+  if (product.period === user.period) {
+    reasons.push('희망 운용 기간과 상품 만기가 일치함');
+  } else if (Math.abs(product.period - user.period) <= 12) {
+    reasons.push('희망 운용 기간과 유사한 만기 조건');
+  }
+
+  if (user.investmentPropensity === '안정' && product.type === 'deposit') {
+    reasons.push('안정형 투자 성향에 적합한 예금 상품');
+  } else if (user.investmentPropensity === '공격' && product.type === 'savings') {
+    reasons.push('공격형 투자 성향에 적합한 적금 상품');
+  }
+
+  if (product.targetJob?.includes(user.job)) {
+    reasons.push(`${user.job} 대상 우대 조건 있음`);
+  }
+
+  if (product.interestRate >= 4) {
+    reasons.push(`높은 금리 (${product.interestRate}%)`);
+  }
+
+  return reasons.length > 0 ? reasons.join(' · ') : '종합 조건 기반 추천';
+};
+
+/**
+ * 정부 지원금 적합성 계산
+ */
+export const calculateBenefitScore = (benefit: Benefit, user: UserInputs): number => {
   let score = 0;
   const annualIncome = user.monthlyIncome * 12;
 
-  // 연령 체크
   if (benefit.minAge && user.age < benefit.minAge) return 0;
   if (benefit.maxAge && user.age > benefit.maxAge) return 0;
   score += 30;
 
-  // 소득 체크
   if (benefit.maxIncome && annualIncome > benefit.maxIncome) return 0;
   score += 40;
 
-  // 직업 매칭
   if (benefit.targetJob?.includes(user.job)) {
     score += 30;
   }
@@ -65,7 +85,7 @@ export const calculateBenefitScore = (benefit: any, user: UserInputs): number =>
 };
 
 /**
- * 실행 우선순위 제안 생성
+ * 실행 우선순위 메시지 생성
  */
 export const generateActionRecommendation = (
   topProduct: FinancialProduct,
@@ -75,30 +95,42 @@ export const generateActionRecommendation = (
   if (topBenefit && topBenefit.name.includes('청년')) {
     return `"${topBenefit.name}" 신청 자격을 먼저 확인하고, "${topProduct.bankName} ${topProduct.productName}"으로 목돈 마련을 시작하세요.`;
   }
-  
+
   if (user.investmentPropensity === '안정') {
     return `안정적인 자산 운용을 위해 "${topProduct.bankName} ${topProduct.productName}" 가입을 최우선으로 검토해보세요.`;
   }
 
-  return `소득의 ${Math.round((user.monthlySavings / user.monthlyIncome) * 100)}%를 저축하고 계시네요! "${topProduct.productName}"을 통해 목표 수익률을 높여보세요.`;
+  const savingsRate = user.monthlyIncome > 0
+    ? Math.round((user.monthlySavings / user.monthlyIncome) * 100)
+    : 0;
+
+  return `소득의 ${savingsRate}%를 저축하고 계시네요! "${topProduct.productName}"을 통해 목표 수익률을 높여보세요.`;
 };
 
 /**
- * 전체 추천 로직 통합
+ * 전체 추천 로직
  */
 export const getRecommendations = (user: UserInputs): RecommendationResult => {
-  const productScores = mockProducts.map(p => ({
-    productId: p.id,
-    score: calculateProductScore(p, user)
-  })).sort((a, b) => b.score - a.score);
+  if (!mockProducts || mockProducts.length === 0) {
+    return { products: [], benefits: [], actionRecommendation: '추천 가능한 상품이 없습니다.', scores: [] };
+  }
+
+  const productScores = mockProducts
+    .map(p => ({ productId: p.id, score: calculateProductScore(p, user) }))
+    .sort((a, b) => b.score - a.score);
 
   const topProductIds = productScores.slice(0, 3).map(ps => ps.productId);
-  const recommendedProducts = mockProducts.filter(p => topProductIds.includes(p.id))
+  const recommendedProducts = mockProducts
+    .filter(p => topProductIds.includes(p.id))
     .sort((a, b) => {
-      const scoreA = productScores.find(ps => ps.productId === a.id)?.score || 0;
-      const scoreB = productScores.find(ps => ps.productId === b.id)?.score || 0;
+      const scoreA = productScores.find(ps => ps.productId === a.id)?.score ?? 0;
+      const scoreB = productScores.find(ps => ps.productId === b.id)?.score ?? 0;
       return scoreB - scoreA;
-    });
+    })
+    .map(p => ({
+      ...p,
+      recommendReason: generateProductReason(p, user),
+    }));
 
   const recommendedBenefits = mockBenefits
     .filter(b => calculateBenefitScore(b, user) > 0)
@@ -114,6 +146,6 @@ export const getRecommendations = (user: UserInputs): RecommendationResult => {
     products: recommendedProducts,
     benefits: recommendedBenefits,
     actionRecommendation,
-    scores: productScores
+    scores: productScores,
   };
 };
