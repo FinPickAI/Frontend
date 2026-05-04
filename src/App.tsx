@@ -3,7 +3,6 @@ import Hero from './components/Hero';
 import UserForm from './components/UserForm';
 import Dashboard from './components/Dashboard';
 import type { UserInputs, RecommendationResult } from './types';
-import { getRecommendations } from './engine';
 import { ShieldCheck, Info } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -13,12 +12,21 @@ const App: React.FC = () => {
 
   const handleStart = () => setStep('form');
 
-  const handleFormSubmit = (data: UserInputs) => {
+  const handleFormSubmit = async (data: UserInputs) => {
     setUserInputs(data);
-    const results = getRecommendations(data);
-    setRecommendations(results);
-    setStep('result');
-    window.scrollTo(0, 0);
+    try {
+      const res = await fetch('http://localhost:3001/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const results = await res.json();
+      setRecommendations(results);
+      setStep('result');
+      window.scrollTo(0, 0);
+    } catch (err) {
+      console.error('API 호출 실패:', err);
+    }
   };
 
   const handleReset = () => {
