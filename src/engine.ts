@@ -2,10 +2,10 @@ import type { UserInputs, FinancialProduct, Benefit, RecommendationResult } from
 import { mockProducts, mockBenefits } from './mockData';
 
 export const calculateProductScore = (product: FinancialProduct, user: UserInputs): number => {
-  // 청년 전용 상품 나이 제한 (34세 초과 시 점수 0)
   const youthOnlyIds = ['p1'];
   if (youthOnlyIds.includes(product.id) && user.age > 34) return 0;
   if (product.targetJob && !product.targetJob.includes(user.job)) return 0;
+
   let score = 0;
 
   if (product.period === user.period) {
@@ -55,8 +55,8 @@ export const generateProductReason = (product: FinancialProduct, user: UserInput
 };
 
 export const calculateBenefitScore = (benefit: Benefit, user: UserInputs): number => {
+  const annualIncome = user.monthlyIncome * 12 * 10000;
   let score = 0;
-  const annualIncome = user.monthlyIncome * 12;
 
   if (benefit.minAge && user.age < benefit.minAge) return 0;
   if (benefit.maxAge && user.age > benefit.maxAge) return 0;
@@ -97,6 +97,8 @@ export const generateActionRecommendation = (
 };
 
 export const getRecommendations = (user: UserInputs): RecommendationResult => {
+  const annualIncome = user.monthlyIncome * 12 * 10000;
+
   if (!mockProducts || mockProducts.length === 0) {
     return { products: [], benefits: [], actionRecommendation: '추천 가능한 상품이 없습니다.', scores: [] };
   }
@@ -123,7 +125,13 @@ export const getRecommendations = (user: UserInputs): RecommendationResult => {
     }));
 
   const recommendedBenefits = mockBenefits
-    .filter(b => calculateBenefitScore(b, user) > 0)
+    .filter(b => {
+      if (b.minAge && user.age < b.minAge) return false;
+      if (b.maxAge && user.age > b.maxAge) return false;
+      if (b.maxIncome && annualIncome > b.maxIncome) return false;
+      if ((b as any).targetJob && !(b as any).targetJob.includes(user.job)) return false;
+      return true;
+    })
     .slice(0, 3);
 
   const actionRecommendation = generateActionRecommendation(
