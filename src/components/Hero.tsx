@@ -10,18 +10,18 @@ const Hero: React.FC<HeroProps> = ({ onStart }) => {
     <div className="relative overflow-hidden bg-navy-900 min-h-screen flex flex-col justify-center text-white">
       
       {/* Spline 3D Fullscreen Background - 200vw width to unify background color without any seams */}
-      <div className="absolute top-0 bottom-0 z-0 overflow-visible pointer-events-auto w-[200vw] left-[-35vw] md:left-[-40vw] lg:left-[-40vw] xl:left-[-35vw] opacity-30 lg:opacity-100">
+      <div className="absolute top-0 bottom-0 z-0 overflow-visible pointer-events-auto w-[200vw] left-[-35vw] md:left-[-40vw] lg:left-[-40vw] xl:left-[-35vw] translate-x-[50px] opacity-30 lg:opacity-100">
         <iframe 
           src='https://my.spline.design/glasscreditcard-etVtvd6zzzDwIUjQG3fcyrxT/' 
           frameBorder='0' 
           width='100%' 
           height='100%'
-          className="w-full h-full border-none outline-none scale-[1.0] lg:scale-[1.1] origin-center"
+          className="w-full h-full border-none outline-none scale-[0.8] lg:scale-[0.9] origin-center"
           title="3D Glass Credit Card Background"
         ></iframe>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-20 w-full relative z-20 flex flex-col items-start text-left mt-12 pointer-events-none">
+      <div className="max-w-7xl mx-auto px-4 py-20 w-full relative z-20 flex flex-col items-start text-left mt-12 translate-x-[50px] pointer-events-none">
         
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 bg-black/40 backdrop-blur-md text-white text-sm font-bold mb-8 animate-fade-in-up shadow-xl pointer-events-auto">

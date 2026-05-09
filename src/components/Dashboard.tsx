@@ -1,10 +1,10 @@
 import React from 'react';
 import type { UserInputs, RecommendationResult, FinancialProduct, Benefit } from '../types';
-import { 
-  Trophy, 
-  Target, 
-  TrendingUp, 
-  Lightbulb, 
+import {
+  Trophy,
+  Target,
+  TrendingUp,
+  Lightbulb,
   ArrowRightCircle,
   Database,
   RefreshCcw,
@@ -18,6 +18,14 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
+  const topScore = result.scores?.[0]?.score ?? 0;
+
+  // 실제 점수 기반 분석 지표 계산
+  const maxPossibleScore = 50 + 30 + 40 + 6 * 2; // 132점
+  const goalFit = Math.min(Math.round((topScore / maxPossibleScore) * 100), 100);
+  const riskLevel = user.investmentPropensity === '안정' ? 20 : user.investmentPropensity === '공격' ? 80 : 50;
+  const joinability = result.products.length >= 3 ? 90 : result.products.length === 2 ? 70 : 50;
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Dashboard Top Stats */}
@@ -46,10 +54,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
           </div>
           <div>
             <p className="text-xs text-slate-500 font-medium">추천 점수</p>
-            <p className="text-xl font-bold text-navy-900">98점</p>
+            <p className="text-xl font-bold text-navy-900">{topScore}점</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={onReset}
           className="card-premium p-6 flex items-center gap-4 hover:bg-slate-50 transition-colors group"
         >
@@ -83,9 +91,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Left Column: Products & Benefits */}
+        {/* Left Column */}
         <div className="lg:col-span-2 space-y-12">
-          {/* Products Section */}
           <section>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -100,7 +107,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
             </div>
           </section>
 
-          {/* Benefits Section */}
           <section>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -121,7 +127,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
             </div>
           </section>
 
-          {/* System Flow */}
           <section>
             <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
               <Database className="text-white" />
@@ -131,7 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
           </section>
         </div>
 
-        {/* Right Column: AI Analysis & Ethics */}
+        {/* Right Column */}
         <div className="space-y-8">
           <div className="sticky top-24">
             <section className="bg-white rounded-3xl p-6 border border-navy-100 shadow-sm mb-6">
@@ -140,9 +145,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
                 AI 추천 상세 분석
               </h3>
               <div className="space-y-4">
-                <AnalysisMetric label="목표 적합성" score={95} />
-                <AnalysisMetric label="위험 수준" score={user.investmentPropensity === '안정' ? 20 : 70} color={user.investmentPropensity === '안정' ? 'bg-mint-500' : 'bg-rose-500'} />
-                <AnalysisMetric label="가입 가능성" score={88} />
+                <AnalysisMetric label="목표 적합성" score={goalFit} />
+                <AnalysisMetric
+                  label="위험 수준"
+                  score={riskLevel}
+                  color={riskLevel <= 30 ? 'bg-mint-500' : riskLevel >= 70 ? 'bg-rose-500' : 'bg-amber-400'}
+                />
+                <AnalysisMetric label="가입 가능성" score={joinability} />
                 <AnalysisMetric label="실행 우선순위" score={100} />
               </div>
               <div className="mt-6 p-4 bg-slate-50 rounded-xl text-sm text-slate-600 leading-relaxed">
@@ -172,12 +181,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
                   원금 손실 가능성이 있는 상품은 가입 전 약관을 반드시 확인하십시오.
                 </li>
               </ul>
-              <div className="mt-6 pt-6 border-t border-slate-800 text-[10px] text-slate-500 text-center uppercase tracking-widest">
-                AI ETHICS CERTIFIED MVP
+              <div className="mt-6 pt-4 border-t border-slate-800 text-[10px] text-slate-500 text-center">
+                데이터 기준: 2026.04 · AI ETHICS CERTIFIED MVP
               </div>
             </section>
 
-            {/* Data Source Notice */}
             <div className="mt-6 flex flex-wrap gap-2 justify-center">
               {['금융감독원', '공공데이터포털', '복지로', '한국은행'].map(s => (
                 <span key={s} className="px-2 py-1 bg-slate-100 text-slate-400 text-[10px] rounded uppercase font-bold">{s}</span>
@@ -190,7 +198,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
   );
 };
 
-const ProductCard: React.FC<{ product: FinancialProduct }> = ({ product }) => (
+const ProductCard: React.FC<{ product: FinancialProduct & { recommendReason?: string } }> = ({ product }) => (
   <div className="card-premium p-6 flex flex-col md:flex-row gap-6 items-start">
     <div className="flex-shrink-0">
       <div className="w-16 h-16 bg-navy-50 rounded-2xl flex flex-col items-center justify-center text-navy-600">
@@ -206,11 +214,13 @@ const ProductCard: React.FC<{ product: FinancialProduct }> = ({ product }) => (
       </div>
       <h4 className="text-lg font-bold text-navy-900 mb-1">{product.productName}</h4>
       <p className="text-sm text-slate-500 mb-3 leading-relaxed">{product.description}</p>
-      
+
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-slate-50 p-3 rounded-xl">
           <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">추천 이유</p>
-          <p className="text-xs text-navy-700 font-medium">해당 직업군 우대 금리 적용 및 목표 기간 일치</p>
+          <p className="text-xs text-navy-700 font-medium">
+            {product.recommendReason ?? '종합 조건 기반 추천'}
+          </p>
         </div>
         <div className="bg-rose-50 p-3 rounded-xl">
           <p className="text-[10px] text-rose-400 font-bold uppercase mb-1">주의사항</p>
@@ -240,16 +250,16 @@ const BenefitCard: React.FC<{ benefit: Benefit }> = ({ benefit }) => (
   </div>
 );
 
-const AnalysisMetric: React.FC<{ label: string, score: number, color?: string }> = ({ label, score, color = 'bg-navy-600' }) => (
+const AnalysisMetric: React.FC<{ label: string; score: number; color?: string }> = ({ label, score, color = 'bg-navy-600' }) => (
   <div className="space-y-1.5">
     <div className="flex justify-between text-xs font-bold">
       <span className="text-slate-500">{label}</span>
       <span className="text-navy-900">{score}%</span>
     </div>
     <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-      <div 
-        className={`h-full transition-all duration-1000 ease-out ${color}`} 
-        style={{ width: `${score}%` }} 
+      <div
+        className={`h-full transition-all duration-1000 ease-out ${color}`}
+        style={{ width: `${score}%` }}
       />
     </div>
   </div>
