@@ -1,42 +1,33 @@
 import type { UserInputs, FinancialProduct, Benefit, RecommendationResult } from './types';
 import { mockProducts, mockBenefits } from './mockData';
 
-/**
- * 금융 상품 추천 점수 계산
- */
 export const calculateProductScore = (product: FinancialProduct, user: UserInputs): number => {
+  // 청년 전용 상품 나이 제한 (34세 초과 시 점수 0)
+  const youthOnlyIds = ['p1'];
+  if (youthOnlyIds.includes(product.id) && user.age > 34) return 0;
+  if (product.targetJob && !product.targetJob.includes(user.job)) return 0;
   let score = 0;
 
-  // 1. 기간 일치 (최대 50점)
   if (product.period === user.period) {
     score += 50;
   } else if (Math.abs(product.period - user.period) <= 12) {
     score += 20;
   }
 
-  // 2. 투자 성향 (최대 30점)
   if (user.investmentPropensity === '안정') {
     score += product.type === 'deposit' ? 30 : 10;
   } else if (user.investmentPropensity === '공격') {
-    score += product.type === 'savings' ? 30 : 5; // 예금도 최소 점수 부여
+    score += product.type === 'savings' ? 30 : 5;
   } else {
-    score += 20; // 중립형: 모든 상품 동일
+    score += 20;
   }
 
-  // 3. 직업 타겟 매칭 (40점)
-  if (product.targetJob?.includes(user.job)) {
-    score += 40;
-  }
-
-  // 4. 금리 가중치
+  if (product.targetJob?.includes(user.job)) score += 40;
   score += product.interestRate * 2;
 
   return score;
 };
 
-/**
- * 추천 이유 생성 (투명성 확보)
- */
 export const generateProductReason = (product: FinancialProduct, user: UserInputs): string => {
   const reasons: string[] = [];
 
@@ -63,9 +54,6 @@ export const generateProductReason = (product: FinancialProduct, user: UserInput
   return reasons.length > 0 ? reasons.join(' · ') : '종합 조건 기반 추천';
 };
 
-/**
- * 정부 지원금 적합성 계산
- */
 export const calculateBenefitScore = (benefit: Benefit, user: UserInputs): number => {
   let score = 0;
   const annualIncome = user.monthlyIncome * 12;
@@ -84,9 +72,6 @@ export const calculateBenefitScore = (benefit: Benefit, user: UserInputs): numbe
   return score;
 };
 
-/**
- * 실행 우선순위 메시지 생성
- */
 export const generateActionRecommendation = (
   topProduct: FinancialProduct,
   topBenefit: Benefit | undefined,
@@ -104,12 +89,13 @@ export const generateActionRecommendation = (
     ? Math.round((user.monthlySavings / user.monthlyIncome) * 100)
     : 0;
 
+  if (savingsRate === 0) {
+    return `"${topProduct.bankName} ${topProduct.productName}"으로 지금 당장 저축을 시작해보세요. 작은 금액도 괜찮습니다.`;
+  }
+
   return `소득의 ${savingsRate}%를 저축하고 계시네요! "${topProduct.productName}"을 통해 목표 수익률을 높여보세요.`;
 };
 
-/**
- * 전체 추천 로직
- */
 export const getRecommendations = (user: UserInputs): RecommendationResult => {
   if (!mockProducts || mockProducts.length === 0) {
     return { products: [], benefits: [], actionRecommendation: '추천 가능한 상품이 없습니다.', scores: [] };
@@ -119,7 +105,11 @@ export const getRecommendations = (user: UserInputs): RecommendationResult => {
     .map(p => ({ productId: p.id, score: calculateProductScore(p, user) }))
     .sort((a, b) => b.score - a.score);
 
-  const topProductIds = productScores.slice(0, 3).map(ps => ps.productId);
+  const topProductIds = productScores
+    .filter(ps => ps.score > 0)
+    .slice(0, 3)
+    .map(ps => ps.productId);
+
   const recommendedProducts = mockProducts
     .filter(p => topProductIds.includes(p.id))
     .sort((a, b) => {

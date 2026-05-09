@@ -182,7 +182,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
                 </li>
               </ul>
               <div className="mt-6 pt-4 border-t border-slate-800 text-[10px] text-slate-500 text-center">
-                데이터 기준: 2026.04 · AI ETHICS CERTIFIED MVP
+                데이터 기준: 2026.05 · AI ETHICS CERTIFIED MVP
               </div>
             </section>
 

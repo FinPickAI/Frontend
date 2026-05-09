@@ -23,12 +23,21 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (formData.age <= 0) newErrors.age = '나이는 0보다 커야 합니다.';
-    if (formData.monthlyIncome < 0) newErrors.monthlyIncome = '소득은 0 이상이어야 합니다.';
-    if (formData.assets < 0) newErrors.assets = '자산은 0 이상이어야 합니다.';
-    if (formData.monthlySavings < 0) newErrors.monthlySavings = '저축액은 0 이상이어야 합니다.';
-    if (!formData.financialGoal.trim()) newErrors.financialGoal = '목표를 입력해주세요.';
-    if (!formData.privacyAgreed) newErrors.privacyAgreed = '개인정보 동의가 필요합니다.';
+
+    if (formData.age <= 0 || formData.age > 100)
+      newErrors.age = '나이는 1~100 사이로 입력해주세요.';
+    if (formData.monthlyIncome < 0)
+      newErrors.monthlyIncome = '소득은 0 이상이어야 합니다.';
+    if (formData.assets < 0)
+      newErrors.assets = '자산은 0 이상이어야 합니다.';
+    if (formData.monthlySavings < 0)
+      newErrors.monthlySavings = '저축액은 0 이상이어야 합니다.';
+    if (formData.monthlySavings > formData.monthlyIncome && formData.monthlyIncome > 0)
+      newErrors.monthlySavings = '저축액이 월 소득을 초과할 수 없습니다.';
+    if (!formData.financialGoal.trim())
+      newErrors.financialGoal = '목표를 입력해주세요.';
+    if (!formData.privacyAgreed)
+      newErrors.privacyAgreed = '개인정보 동의가 필요합니다.';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -36,9 +45,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      onSubmit(formData);
-    }
+    if (validate()) onSubmit(formData);
   };
 
   return (
@@ -49,17 +56,19 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="card-premium p-8 md:p-10 space-y-8">
-        {/* Basic Info Group */}
+        {/* 나이 + 직업 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="block mb-3 text-sm font-semibold text-slate-700">나이</label>
             <input
               type="number"
+              min={1}
+              max={100}
               value={formData.age}
               onChange={(e) => setFormData({ ...formData, age: Number(e.target.value) })}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-navy-500 focus:border-transparent outline-none"
             />
-            {errors.age && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.age}</p>}
+            {errors.age && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={12} />{errors.age}</p>}
           </div>
 
           <div className="space-y-2">
@@ -76,38 +85,46 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
           </div>
         </div>
 
-        {/* Income & Assets Group */}
+        {/* 소득 + 자산 + 저축 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="block mb-3 text-sm font-semibold text-slate-700">월 소득 (만원)</label>
             <input
               type="number"
+              min={0}
               value={formData.monthlyIncome}
               onChange={(e) => setFormData({ ...formData, monthlyIncome: Number(e.target.value) })}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-navy-500 outline-none"
             />
+            {errors.monthlyIncome && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={12} />{errors.monthlyIncome}</p>}
           </div>
+
           <div className="space-y-2">
             <label className="block mb-3 text-sm font-semibold text-slate-700">자산 (만원)</label>
             <input
               type="number"
+              min={0}
               value={formData.assets}
               onChange={(e) => setFormData({ ...formData, assets: Number(e.target.value) })}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-navy-500 outline-none"
             />
+            {errors.assets && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={12} />{errors.assets}</p>}
           </div>
+
           <div className="space-y-2">
             <label className="block mb-3 text-sm font-semibold text-slate-700">월 저축 가능액 (만원)</label>
             <input
               type="number"
+              min={0}
               value={formData.monthlySavings}
               onChange={(e) => setFormData({ ...formData, monthlySavings: Number(e.target.value) })}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-navy-500 outline-none"
             />
+            {errors.monthlySavings && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={12} />{errors.monthlySavings}</p>}
           </div>
         </div>
 
-        {/* Goal & Propensity */}
+        {/* 금융 목표 + 투자 성향 + 희망 기간 */}
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="block mb-3 text-sm font-semibold text-slate-700">금융 목표</label>
@@ -118,6 +135,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
               onChange={(e) => setFormData({ ...formData, financialGoal: e.target.value })}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-navy-500 outline-none"
             />
+            {errors.financialGoal && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={12} />{errors.financialGoal}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -130,10 +148,11 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
                     type="button"
                     onClick={() => setFormData({ ...formData, investmentPropensity: p })}
                     className={`flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${
-                      formData.investmentPropensity === p 
-                        ? 'bg-navy-600 border-navy-600 text-white shadow-md' 
+                      formData.investmentPropensity === p
+                        ? 'bg-navy-600 border-navy-600 text-white shadow-md'
                         : 'bg-white border-slate-200 text-slate-600 hover:border-navy-200'
-                    }`}>
+                    }`}
+                  >
                     {p === '안정' ? '안정추구' : p === '중립' ? '중립형' : '적극투자'}
                   </button>
                 ))}
@@ -155,7 +174,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
           </div>
         </div>
 
-        {/* Privacy Agreement */}
+        {/* 개인정보 동의 */}
         <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -169,7 +188,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
               <p className="leading-relaxed">맞춤형 금융 상품 및 지원금 추천을 위해 입력하신 정보를 수집합니다. 정보는 분석 후 저장되지 않으며 일회성으로 사용됩니다.</p>
             </div>
           </label>
-          {errors.privacyAgreed && <p className="text-xs text-red-500 mt-2 flex items-center gap-1"><AlertCircle size={12} /> {errors.privacyAgreed}</p>}
+          {errors.privacyAgreed && <p className="text-xs text-red-500 mt-2 flex items-center gap-1"><AlertCircle size={12} />{errors.privacyAgreed}</p>}
         </div>
 
         <button type="submit" className="btn-secondary w-full text-lg py-4 flex items-center justify-center gap-2">
