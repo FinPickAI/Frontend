@@ -34,6 +34,7 @@ export interface Benefit {
   minAge?: number;
   maxAge?: number;
   maxIncome?: number; // 연소득 기준
+  targetJob?: JobType[];
   category: string;
   relevanceReason: string;
 }
