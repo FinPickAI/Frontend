@@ -47,7 +47,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-heading bg-navy-900 text-slate-100 selection:bg-mint-500/30">
-      <header className="sticky top-0 z-50 bg-navy-900/80 backdrop-blur-md border-b border-navy-800">
+      <header className="sticky top-0 z-50 bg-navy-900/80 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center">
           <div className="flex items-center gap-2 cursor-pointer" onClick={handleReset}>
             <div className="w-8 h-8 bg-mint-500 rounded-lg flex items-center justify-center shadow-lg shadow-mint-500/20">
@@ -104,7 +104,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="bg-navy-950 text-navy-300 py-12 border-t border-navy-800">
+      <footer className="bg-navy-900 text-navy-300 py-12">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 items-center">
             <div>
@@ -121,8 +121,8 @@ const App: React.FC = () => {
               <p className="text-xs">© 2026 FinPick. 과제용 프로토타입으로 실제 서비스가 아닙니다.</p>
             </div>
           </div>
-          <div className="border-t border-slate-800 pt-8">
-            <div className="flex items-start gap-3 bg-navy-900/50 p-5 rounded-2xl border border-navy-800">
+          <div className="border-t border-white/5 pt-8">
+            <div className="flex items-start gap-3 bg-navy-900/50 p-5 rounded-2xl border border-white/5">
               <Info size={18} className="text-mint-400 mt-0.5 flex-shrink-0" />
               <p className="text-xs leading-relaxed">
                 <span className="text-white font-semibold">법적 고지:</span> 본 서비스는 참고용 정보이며, 최종 금융 의사결정은 사용자 본인의 책임입니다. 제공되는 금리 및 조건은 실제와 다를 수 있으므로 해당 금융사의 최신 공시를 반드시 확인하시기 바랍니다.
