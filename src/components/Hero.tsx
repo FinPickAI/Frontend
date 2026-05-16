@@ -7,16 +7,17 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ onStart }) => {
   return (
-    <div className="relative overflow-hidden bg-navy-900 min-h-screen flex flex-col justify-center text-white">
+    <div className="relative overflow-hidden bg-[#0e0420] h-[calc(100vh-4rem)] flex flex-col justify-center text-white">
       
       {/* Spline 3D Fullscreen Background - 200vw width to unify background color without any seams */}
-      <div className="absolute top-0 bottom-0 z-0 overflow-visible pointer-events-auto w-[200vw] left-[-35vw] md:left-[-40vw] lg:left-[-40vw] xl:left-[-35vw] translate-x-[50px] opacity-30 lg:opacity-100">
-        <iframe 
-          src='https://my.spline.design/glasscreditcard-etVtvd6zzzDwIUjQG3fcyrxT/' 
-          frameBorder='0' 
-          width='100%' 
+      <div className="absolute top-0 bottom-0 z-0 overflow-hidden pointer-events-auto w-[200vw] left-[-35vw] md:left-[-40vw] lg:left-[-40vw] xl:left-[-35vw] translate-x-[50px] opacity-30 lg:opacity-100 bg-[#0e0420]">
+        <iframe
+          src='https://my.spline.design/glasscreditcard-etVtvd6zzzDwIUjQG3fcyrxT/'
+          frameBorder='0'
+          width='100%'
           height='100%'
-          className="w-full h-full border-none outline-none scale-[0.8] lg:scale-[0.9] origin-center"
+          className="w-full h-full border-none outline-none"
+          style={{ backgroundColor: '#0e0420' }}
           title="3D Glass Credit Card Background"
         ></iframe>
       </div>
