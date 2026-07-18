@@ -212,9 +212,15 @@ const ProductCard: React.FC<{ product: FinancialProduct }> = ({ product }) => {
   return (
     <div className="card-premium p-6 flex flex-col md:flex-row gap-6 items-start">
       <div className="flex-shrink-0">
-        <div className="w-16 h-16 bg-navy-50 rounded-2xl flex flex-col items-center justify-center text-navy-600">
-          <span className="text-[10px] font-bold uppercase tracking-tighter opacity-60">{product.bankName}</span>
-          <span className="text-lg font-black">{product.interestRate}<span className="text-xs">%</span></span>
+        <div className="w-16 h-16 bg-navy-50 rounded-2xl flex flex-col items-center justify-center text-navy-600 px-2 py-1 overflow-hidden">
+          <span
+            className={`${
+              product.bankName.length > 6 ? 'text-[8px]' : 'text-[10px]'
+            } font-bold uppercase tracking-tight opacity-60 text-center leading-tight break-keep w-full`}
+          >
+            {product.bankName}
+          </span>
+          <span className="text-lg font-black leading-none mt-0.5">{product.interestRate}<span className="text-xs">%</span></span>
         </div>
       </div>
       <div className="flex-grow">
