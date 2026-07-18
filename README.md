@@ -1,44 +1,57 @@
-# FinPick - AI 개인 맞춤 금융 큐레이션 MVP
+# FinPick — 나만의 금융 큐레이션 서비스
 
-FinPick은 사용자의 나이, 소득, 자산, 금융 목표, 투자 성향을 분석하여 최적의 금융 상품과 정부 지원금을 큐레이션해주는 AI 기반 금융 서비스 프로토타입입니다.
+FinPick은 사용자의 나이, 직업, 소득, 저축 목표, 투자성향을 바탕으로 예금·적금 상품과 정부지원금을 추천하는 개인 맞춤형 금융 큐레이션 서비스입니다.
 
-## 🚀 주요 기능
-- **개인 맞춤형 추천**: 8가지 사용자 데이터를 기반으로 한 규칙 기반 점수 시스템
-- **통합 대시보드**: 금융 상품(예/적금)과 정부 지원금을 한눈에 확인
-- **행동 제안**: 분석 결과를 바탕으로 "오늘 가장 먼저 할 일" 제시
-- **AI 윤리 설계**: 개인정보 보호, 추천 투명성, 손실 가능성 안내 등 법적/윤리적 가이드라인 준수
+단순히 최고 금리 상품을 나열하는 것이 아니라, 실제 금융감독원 데이터를 분석해 도출한 인사이트(가입기간별 금리 분포, 은행 유형별 금리 격차, 단리/복리 차이 등)를 추천 로직에 직접 반영합니다.
 
-## 🛠 기술 스택
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, Lucide React (Icons)
-- **State Management**: React Hooks (useState)
-- **Deployment Ready**: 정적 호스팅 지원
+- **Backend**: [finpick-backend](https://github.com/FinPickAI/Backend)
+- **Live Demo**: https://frontend-bngx.vercel.app
 
-## 📦 설치 및 실행 방법
+---
 
-### 1. 의존성 설치
-```bash
-npm install
+## Frontend
+
+### 개요
+
+사용자 정보를 입력받아 백엔드 `/recommend` API를 호출하고, 추천 상품·정부지원금·AI 분석 결과를 대시보드 형태로 시각화하는 React 애플리케이션입니다.
+
+### 기술 스택
+
+- React 19, TypeScript
+- Vite
+- Tailwind CSS
+
+### 폴더 구조
+
+```
+finpick-frontend/
+├── src/
+│   ├── components/
+│   │   ├── Hero.tsx        # 랜딩 화면
+│   │   ├── UserForm.tsx    # 사용자 정보 입력 폼
+│   │   └── Dashboard.tsx   # 추천 결과 대시보드
+│   ├── App.tsx              # 라우팅 및 상태 관리, 백엔드 fetch
+│   ├── types.ts             # 타입 정의 (백엔드 응답 구조와 일치)
+│   └── main.tsx
+└── .env.example              # 필요 환경변수 템플릿
 ```
 
-### 2. 로컬 개발 서버 실행
+### 실행 방법
+
 ```bash
+npm install
+cp .env.example .env   # VITE_API_URL 입력
 npm run dev
 ```
 
-### 3. 빌드 (배포용)
-```bash
-npm run build
-```
+### 환경변수
 
-## 📂 파일 구조
-- `src/types.ts`: TypeScript 인터페이스 정의
-- `src/components/`: 기능별 UI 컴포넌트 (Hero, UserForm, Dashboard)
-- `src/App.tsx`: 메인 화면 전환 및 상태 관리, 백엔드 `/recommend` API 호출
+| 변수 | 설명 |
+|---|---|
+| `VITE_API_URL` | 백엔드 API 서버 주소 |
 
-> 추천 알고리즘(점수 계산)은 백엔드(`finpick-backend`)에서 수행하며, 실제 금융감독원 오픈API 데이터를 저장한 PostgreSQL을 조회합니다. 환경변수 `VITE_API_URL`로 백엔드 주소를 지정합니다.
+### 화면 흐름
 
-## ⚖️ 안내 사항
-본 서비스는 과제용 MVP 프로토타입입니다.
-- **데이터 출처**: 예/적금 상품은 금융감독원 금융상품통합비교공시 오픈API(finlife.fss.or.kr) 실데이터, 정부지원금은 예시 데이터로 구현됨
-- **법적 고지**: 본 서비스는 참고용 정보이며, 최종 금융 의사결정은 사용자 본인의 책임입니다.
+1. **Hero** — 서비스 소개 및 시작하기
+2. **UserForm** — 나이, 직업, 소득, 자산, 저축목표, 투자성향, 희망기간 입력
+3. **Dashboard** — 추천 상품 TOP 3, 정부지원금, AI 추천 상세 분석(목표 적합성·위험 수준·가입 가능성) 표시
