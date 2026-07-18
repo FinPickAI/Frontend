@@ -18,10 +18,14 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
-  const topScore = result.scores?.[0]?.score ?? 0;
+  // 모든 지표(통계 카드·목표 적합성)의 단일 기준점: 추천 상품 중 최고 점수
+  const topScore = result.products?.length
+    ? Math.max(...result.products.map((p) => p.score ?? 0))
+    : 0;
 
-  // 실제 점수 기반 분석 지표 계산
-  const maxPossibleScore = 50 + 30 + 40 + 6 * 2; // 132점
+  // 실제 점수 기반 분석 지표 계산 (백엔드 calculateScore 최대 가중치 합산 기준)
+  // 기간일치 40 + 12개월 10 + 투자성향 35 + 인터넷은행 15 + 복리 8 + 키워드 20 + 금리(6%*3) 18
+  const maxPossibleScore = 40 + 10 + 35 + 15 + 8 + 20 + 18; // 146점
   const goalFit = Math.min(Math.round((topScore / maxPossibleScore) * 100), 100);
   const riskLevel = user.investmentPropensity === '안정' ? 20 : user.investmentPropensity === '공격' ? 80 : 50;
   const joinability = result.products.length >= 3 ? 90 : result.products.length === 2 ? 70 : 50;
@@ -198,43 +202,53 @@ const Dashboard: React.FC<DashboardProps> = ({ user, result, onReset }) => {
   );
 };
 
-const ProductCard: React.FC<{ product: FinancialProduct & { recommendReason?: string } }> = ({ product }) => (
-  <div className="card-premium p-6 flex flex-col md:flex-row gap-6 items-start">
-    <div className="flex-shrink-0">
-      <div className="w-16 h-16 bg-navy-50 rounded-2xl flex flex-col items-center justify-center text-navy-600">
-        <span className="text-[10px] font-bold uppercase tracking-tighter opacity-60">{product.bankName}</span>
-        <span className="text-lg font-black">{product.interestRate}<span className="text-xs">%</span></span>
-      </div>
-    </div>
-    <div className="flex-grow">
-      <div className="flex flex-wrap gap-2 mb-2">
-        {product.tags.map(tag => (
-          <span key={tag} className="px-2 py-0.5 bg-mint-50 text-mint-700 text-[10px] font-bold rounded-full">#{tag}</span>
-        ))}
-      </div>
-      <h4 className="text-lg font-bold text-navy-900 mb-1">{product.productName}</h4>
-      <p className="text-sm text-slate-500 mb-3 leading-relaxed">{product.description}</p>
+const ProductCard: React.FC<{ product: FinancialProduct }> = ({ product }) => {
+  const chips = [
+    product.type === 'deposit' ? '예금' : '적금',
+    `${product.period}개월`,
+    product.interestType,
+  ].filter(Boolean);
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-slate-50 p-3 rounded-xl">
-          <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">추천 이유</p>
-          <p className="text-xs text-navy-700 font-medium">
-            {product.recommendReason ?? '종합 조건 기반 추천'}
-          </p>
-        </div>
-        <div className="bg-rose-50 p-3 rounded-xl">
-          <p className="text-[10px] text-rose-400 font-bold uppercase mb-1">주의사항</p>
-          <p className="text-xs text-rose-700 font-medium">{product.notice}</p>
+  return (
+    <div className="card-premium p-6 flex flex-col md:flex-row gap-6 items-start">
+      <div className="flex-shrink-0">
+        <div className="w-16 h-16 bg-navy-50 rounded-2xl flex flex-col items-center justify-center text-navy-600">
+          <span className="text-[10px] font-bold uppercase tracking-tighter opacity-60">{product.bankName}</span>
+          <span className="text-lg font-black">{product.interestRate}<span className="text-xs">%</span></span>
         </div>
       </div>
+      <div className="flex-grow">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          {chips.map(chip => (
+            <span key={chip} className="px-2 py-0.5 bg-mint-50 text-mint-700 text-[10px] font-bold rounded-full">{chip}</span>
+          ))}
+          <span className="px-2 py-0.5 bg-navy-900 text-white text-[10px] font-bold rounded-full">추천 점수 {product.score}</span>
+        </div>
+        <h4 className="text-lg font-bold text-navy-900 mb-3">{product.bankName} {product.productName}</h4>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="bg-slate-50 p-3 rounded-xl">
+            <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">추천 이유</p>
+            <p className="text-xs text-navy-700 font-medium leading-relaxed">
+              {product.recommendReason || '종합 조건 기반 추천'}
+            </p>
+          </div>
+          <div className="bg-navy-50 p-3 rounded-xl">
+            <p className="text-[10px] text-navy-400 font-bold uppercase mb-1">상품 정보</p>
+            <p className="text-xs text-navy-700 font-medium leading-relaxed">
+              {product.type === 'deposit' ? '정기예금' : '정기적금'} · 만기 {product.period}개월 · {product.interestType} · 최고 연 {product.interestRate}%
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="flex-shrink-0 w-full md:w-auto">
+        <button className="w-full md:w-auto px-6 py-3 bg-navy-900 text-white text-sm font-bold rounded-xl hover:bg-navy-800 transition-colors">
+          상품 보러가기
+        </button>
+      </div>
     </div>
-    <div className="flex-shrink-0 w-full md:w-auto">
-      <button className="w-full md:w-auto px-6 py-3 bg-navy-900 text-white text-sm font-bold rounded-xl hover:bg-navy-800 transition-colors">
-        상품 보러가기
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
 const BenefitCard: React.FC<{ benefit: Benefit }> = ({ benefit }) => (
   <div className="card-premium p-6 hover:border-mint-200 transition-colors">

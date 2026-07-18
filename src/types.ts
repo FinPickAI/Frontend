@@ -18,13 +18,12 @@ export interface FinancialProduct {
   id: string;
   bankName: string;
   productName: string;
-  interestRate: number;
-  period: number;
   type: 'deposit' | 'savings';
-  targetJob?: JobType[];
-  description: string;
-  notice: string;
-  tags: string[];
+  period: number;
+  interestRate: number;
+  interestType: string; // '단리' | '복리' 등 (금리 방식)
+  score: number;
+  recommendReason: string;
 }
 
 export interface Benefit {
@@ -43,5 +42,4 @@ export interface RecommendationResult {
   products: FinancialProduct[];
   benefits: Benefit[];
   actionRecommendation: string;
-  scores: { productId: string; score: number }[];
 }

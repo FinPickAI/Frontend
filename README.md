@@ -32,13 +32,13 @@ npm run build
 ```
 
 ## 📂 파일 구조
-- `src/types/`: TypeScript 인터페이스 정의
-- `src/data/`: 금융 상품 및 지원금 Mock 데이터
-- `src/utils/`: 추천 알고리즘 로직 (`engine.ts`)
-- `src/components/`: 기능별 UI 컴포넌트
-- `src/App.tsx`: 메인 화면 전환 및 상태 관리
+- `src/types.ts`: TypeScript 인터페이스 정의
+- `src/components/`: 기능별 UI 컴포넌트 (Hero, UserForm, Dashboard)
+- `src/App.tsx`: 메인 화면 전환 및 상태 관리, 백엔드 `/recommend` API 호출
+
+> 추천 알고리즘(점수 계산)은 백엔드(`finpick-backend`)에서 수행하며, 실제 금융감독원 오픈API 데이터를 저장한 PostgreSQL을 조회합니다. 환경변수 `VITE_API_URL`로 백엔드 주소를 지정합니다.
 
 ## ⚖️ 안내 사항
 본 서비스는 과제용 MVP 프로토타입입니다.
-- **데이터 출처**: 금융감독원, 공공데이터포털, 복지로, 한국은행 ECOS 등 (Mock 데이터로 구현됨)
+- **데이터 출처**: 예/적금 상품은 금융감독원 금융상품통합비교공시 오픈API(finlife.fss.or.kr) 실데이터, 정부지원금은 예시 데이터로 구현됨
 - **법적 고지**: 본 서비스는 참고용 정보이며, 최종 금융 의사결정은 사용자 본인의 책임입니다.
